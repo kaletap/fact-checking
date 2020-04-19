@@ -1,7 +1,13 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt; plt.style.use("fivethirtyeight")
+from tqdm.notebook import tqdm
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.metrics import accuracy_score, f1_score, auc, roc_auc_score, roc_curve
+import torch
+import flair
+from flair.embeddings import WordEmbeddings, FlairEmbeddings, DocumentPoolEmbeddings, Sentence
 
 
 def get_label(data):
@@ -10,8 +16,7 @@ def get_label(data):
     return label
 
 
-def plot_roc(model, x, y):
-    probs = model.predict_proba(x)
+def plot_roc(y, probs):
     preds = probs[:,1]
     fpr, tpr, threshold = roc_curve(y, preds)
     roc_auc = auc(fpr, tpr)
@@ -28,17 +33,58 @@ def plot_roc(model, x, y):
     
     
 def evaluate(model, x, y):
-    y_pred = model.predict(x)
+    probs = model.predict_proba(x)
+    y_pred = probs[:, 1] > 0.5
     acc = accuracy_score(y, y_pred)
     f1 = f1_score(y, y_pred)
-    print("Accuracy: {:.4f}".format(acc))
+    print("Accuracy: {:.2f}".format(acc * 100))
     print("F-1 score: {:.4f}".format(f1))
-    plot_roc(model, x, y)
+    plot_roc(y, probs)
     
     
+def instantiate(foo):
+    return foo()
+    
 
-def impute(x_array):
-    return np.array(["unknown" if x is np.nan else x for x in x_array.values])
+@instantiate
+def Imputer():
+    def impute(x_array):
+        if type(x_array) == pd.core.series.Series:
+            x_array = x_array.values
+        return np.array(["unknown" if x is np.nan else x for x in x_array])
+    return FunctionTransformer(impute)
 
 
-imputer = FunctionTransformer(impute)
+@instantiate
+def Vectorizer():
+    return TfidfVectorizer(stop_words="english", min_df=0.0005, max_df=0.95, max_features=10_000)
+
+
+@instantiate
+def Splitter():
+    def split_subject(x_array):
+        if type(x_array) == pd.core.series.Series:
+            x_array = x_array.values
+        return np.array([x.replace(",", " ") for x in x_array])
+    return FunctionTransformer(split_subject)
+
+
+@instantiate
+def Embedder():
+    def embed(x_array):
+        if type(x_array) == pd.core.series.Series:
+            x_array = x_array.values
+        glove_embedding = WordEmbeddings('glove')
+        flair_embedding_forward = FlairEmbeddings('news-forward')
+        flair_embedding_backward = FlairEmbeddings('news-backward')
+        document_embeddings = DocumentPoolEmbeddings([flair_embedding_forward])
+        embedding_list = []
+        for text in tqdm(x_array):
+            sentence = Sentence(text)
+            document_embeddings.embed(sentence)
+            embedding = sentence.get_embedding()
+            embedding_list.append(embedding)
+        embedding_list = torch.stack(embedding_list)
+        return embedding_list.cpu().detach().numpy()
+    return FunctionTransformer(embed)
+ 
