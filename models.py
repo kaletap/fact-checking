@@ -5,12 +5,12 @@ from scipy.sparse.csr import csr_matrix
 import matplotlib.pyplot as plt; plt.style.use("fivethirtyeight")
 
 RANDOM_SEED = 42
-np.random.seed(RANDOM_SEED)
-torch.manual_seed(RANDOM_SEED)
 
 
 class WeightedLogisticRegression:
-    def __init__(self, loss_weights=None, max_iter=300, l1=0., l2=0.0005, lr=0.1, tol=1e-4, plot_loss=False):
+    def __init__(self, loss_weights=None, max_iter=300, l1=0., l2=0.0005, lr=0.1, tol=1e-4, plot_loss=False, verbose=False):
+        np.random.seed(RANDOM_SEED)
+        torch.manual_seed(RANDOM_SEED)
         self.loss_weights = loss_weights or (1, 1, 1, 1, 1)
         self.max_iter = max_iter
         self.weight_decay = l2
@@ -18,6 +18,7 @@ class WeightedLogisticRegression:
         self.lr = lr
         self.tol = tol
         self.plot_loss = plot_loss
+        self.verbose = verbose
         self.w = None
         self.losses = []
 
@@ -34,7 +35,7 @@ class WeightedLogisticRegression:
         x = self.tensor(x)
         y = torch.tensor([1 if y == 0 else 0 for y in y_multi]).float()
         n_features = x.shape[1]
-        self.w = torch.randn(size=(n_features,)).requires_grad_()
+        self.w = torch.zeros(size=(n_features,)).requires_grad_()
         weight_dict = {
             0: 1,
             1: self.loss_weights[0],
@@ -52,6 +53,8 @@ class WeightedLogisticRegression:
             logits = x @ self.w
             loss = criterion(logits, y) + self.l1 * torch.mean(torch.abs(self.w))
             if abs(loss.item() - previous_loss) < self.tol:
+                if self.verbose:
+                    print("Converged after {} iterations.".format(i))
                 break
             loss.backward()
             self.losses.append(loss.item())
