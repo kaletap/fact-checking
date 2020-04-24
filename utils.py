@@ -16,13 +16,29 @@ def get_label(data):
     return label
 
 
+def get_multi_label(data):
+    label_dict = {
+        "true": 5,
+        "mostly-true": 4,
+        "half-true": 3,
+        "barely-true": 2,
+        "false": 1,
+        "pants-fire": 0
+    }
+    label = [label_dict[word_label] for word_label in data["label"].values]
+    return np.array(label)
+
+
 def plot_roc(y, probs):
-    preds = probs[:,1]
+    if len(probs.shape) > 1:
+        preds = probs[:,1]
+    else:
+        preds = probs
     fpr, tpr, threshold = roc_curve(y, preds)
     roc_auc = auc(fpr, tpr)
 
     plt.title('Receiver Operating Characteristic')
-    plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % roc_auc)
+    plt.plot(fpr, tpr, 'b', label = 'AUC = %0.4f' % roc_auc)
     plt.legend(loc = 'lower right')
     plt.plot([0, 1], [0, 1],'r--')
     plt.xlim([0, 1])
@@ -30,6 +46,7 @@ def plot_roc(y, probs):
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
     plt.show()
+    return roc_auc
     
     
 def evaluate(model, x, y):
@@ -87,4 +104,3 @@ def Embedder():
         embedding_list = torch.stack(embedding_list)
         return embedding_list.cpu().detach().numpy()
     return FunctionTransformer(embed)
- 
