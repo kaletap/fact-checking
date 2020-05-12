@@ -1,0 +1,22 @@
+1. Dane w pliku train.tsv zawierają publiczne wypowiedzi i ocenę prawdziwości
+
+2. Opis kolumn:
+
+label - ocena: pants-fire, false, barely-true, half-true, mostly-true, true
+statement - treść wypowiedzi
+subject - temat/tematy
+speaker - czyja wypowiedź
+speaker_job - jego/jej stanowisko 
+state - stan
+party - partia
+context - kontekst, np. 'a town hall in Austin, Texas'
+
+3. Cel: zbudować model, który przewidzi czy dana wypowiedź to bzdura (pants-fire)
+
+4. Co oddać?
+a) scory dla zbioru testowego test_noy.tsv w następującym formacie:
+ * plik tekstowy z rozszerzeniem .res
+ * pierwsza linijka pliku: imię i nazwisko
+ * kolejne linie: scory dla kolejnych rekordów zbioru testowego
+b) 2-3 slajdy z opisem rozwiązania
+
