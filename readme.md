@@ -61,4 +61,4 @@ My model achieved an average of 0.7859 ROC AUC score on 10 fold cross-validation
 
 ## Summary
 
-My two observations here is that embeddings are useful (but maybe not that useful as we would like them to be), and sometimes it is possible to get more out of data, by using more available information and some modelling tricks like improving loss function.
+My two observations here is that embeddings are useful (but maybe not as useful as we would like them to be), and sometimes it is possible to get more out of data, by using more available information and some modelling tricks like improving loss function.
