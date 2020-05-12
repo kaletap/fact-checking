@@ -59,11 +59,6 @@ I decided to use embeddings of statement and context since they are mostly a lit
 
 My model achieved an average of 0.7859 ROC AUC score on 10 fold cross-validation. This estimate is biased, since I am not using the whole training data. On a hidden test set, which I didn't have an access to, my model achieved **0.7944 ROC AUC** which turned out to be the best out of 24 submissions. The best scores that didn't use word embeddings was 0.7869 (which is actually not that different), there was also a submission that got 0.7876 and used BERT, but with standard objective.
 
-My two observations here is that embeddings are useful (but maybe not that useful as we would like them to be), and sometimes it is possible to get more from data, by using more available information and some modelling tricks.
+## Summary
 
-
-
-
-
-
-
+My two observations here is that embeddings are useful (but maybe not that useful as we would like them to be), and sometimes it is possible to get more out of data, by using more available information and some modelling tricks like improving loss function.
